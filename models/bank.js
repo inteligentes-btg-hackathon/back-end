@@ -1,11 +1,11 @@
 'use strict';
 const { Model } = require('sequelize');
+
 module.exports = (sequelize, DataTypes) => {
 	class Bank extends Model {
 		static associate(models) {
-			Bank.hasMany(models.Client, { foreignKey: 'clients' });
-			Bank.belongsTo(models.FixedIncomes, { foreignKey: 'bankId' });
-			Bank.belongsTo(models.VariableIncomes, { foreignKey: 'bankId' });
+			// TODO: Associate the Bank model with the fixed and variable incomes models.
+			Bank.hasMany(models.Client, { foreignKey: 'customerId' });
 		}
 	}
 	Bank.init(
