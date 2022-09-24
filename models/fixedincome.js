@@ -1,19 +1,12 @@
 'use strict';
 const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-	class VariableIncomes extends Model {
+	class FixedIncome extends Model {
 		static associate(models) {
-			VariableIncomes.hasOne(models.Banks, {
-				foreignKey: 'bankId',
-				as: 'id',
-			});
-			VariableIncomes.hasOne(models.ProductsClient, {
-				foreignKey: 'productsVariableIncomes',
-				as: 'id',
-			});
+			FixedIncome.hasOne(models.Client, { foreignKey: 'customerId' });
 		}
 	}
-	VariableIncomes.init(
+	FixedIncome.init(
 		{
 			customerId: {
 				allowNull: false,
@@ -25,14 +18,15 @@ module.exports = (sequelize, DataTypes) => {
 			name: DataTypes.STRING,
 			type: DataTypes.STRING,
 			exempt: DataTypes.BOOLEAN,
-			minimalValue: DataTypes.INTEGER,
-			maturity: DataTypes.STRING,
+			interestRate: DataTypes.FLOAT,
+			minimalValue: DataTypes.FLOAT,
+			maturity: DataTypes.DATEONLY,
 			date: DataTypes.DATEONLY,
 		},
 		{
 			sequelize,
-			modelName: 'VariableIncomes',
+			modelName: 'FixedIncome',
 		}
 	);
-	return VariableIncomes;
+	return FixedIncome;
 };
