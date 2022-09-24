@@ -105,6 +105,7 @@ dist
 
 # Dev env
 .vscode
+package-lock.json
 
 # Configs
 config
