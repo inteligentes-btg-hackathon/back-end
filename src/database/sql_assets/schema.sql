@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS clients (
   investments_ids int ARRAY NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS clients (
+CREATE TABLE IF NOT EXISTS profit_loss (
   customer_id varchar PRIMARY KEY NOT NULL UNIQUE,
   day_trade_profit FLOAT,
   swing_trade_profit FLOAT,
