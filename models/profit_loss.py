@@ -3,7 +3,8 @@ from datetime import date
 
 
 class profit_loss(BaseModel):
-    
+
+    __table__ = "profit_loss"
     customer_id : str
     day_trade_profit :float
     swing_trade_profit :float
@@ -30,5 +31,3 @@ class profit_loss(BaseModel):
             "date",
             "taxes"
         ]
-
-

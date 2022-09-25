@@ -266,4 +266,4 @@ class QueryConstructor:
 
 # Create database object instance
 db = Database()  # Create a database object
-db.setup()  # Setup the database
+# db.setup()  # Setup the database

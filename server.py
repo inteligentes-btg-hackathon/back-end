@@ -1,5 +1,6 @@
 from fastapi import FastAPI
-#from src.middlewares import process_time
+from middlewares import process_time, security
+from configurations import *
 from routes import client
 import uvicorn
 
@@ -7,7 +8,11 @@ import uvicorn
 app = FastAPI()
 
 # Adding middleware to the app
-# app.include_router(process_time.router)
+CORS.setup(app)
+process_time.setup(app)
+security.setup(app)
+
+# Adding routes to the app
 app.include_router(client.router, prefix="/mockup", tags=["client"])
 
 if __name__ == "__main__":
