@@ -1,3 +1,4 @@
+from __future__ import annotations
 import psycopg2
 import sys
 import boto3
@@ -65,19 +66,64 @@ class Database:
         self.run_sql_from_file("src/database/sql_assets/schema.sql")
         print("Database setup complete!")
 
-    def get_table(self, table_name: str) -> list:
-        """Get a table from the database"""
-        cur = self.conn.cursor()
-        cur.execute("""SELECT * FROM {}""".format(table_name))
-        query_results = cur.fetchall()
-        return query_results
+    def execute(self, query: str, params: tuple = None) -> list:
+        """Execute a query"""
+        try:
+            cur = self.conn.cursor()
+            cur.execute(query, params)
+            self.conn.commit()
+            return cur.fetchall()
+        except Exception as e:
+            print("Query failed due to {}".format(e))
 
-    def get_table_with_filter(self, table_name: str, filter: str) -> list:
-        """Get a table from the database with a filter"""
-        cur = self.conn.cursor()
-        cur.execute("""SELECT * FROM {} WHERE {}""".format(table_name, filter))
-        query_results = cur.fetchall()
-        return query_results
+
+class QueryConstructor:
+    def __init__(self, table: str, db: Database) -> None:
+        self.table = table
+        self.db = db
+        self.query = ""
+
+    def select(self, columns: list = None) -> QueryConstructor:
+        """Select columns"""
+        if columns is None:
+            self.query += "SELECT * FROM {}".format(self.table)
+        else:
+            self.query += "SELECT {} FROM {}".format(
+                ", ".join(columns), self.table)
+        return self
+
+    def where(self, column: str, operator: str, value: str) -> QueryConstructor:
+        """Add a where clause"""
+        self.query += " WHERE {} {} '{}'".format(column, operator, value)
+        return self
+
+    def and_(self, column: str, operator: str, value: str) -> QueryConstructor:
+        """Add an and clause"""
+        self.query += " AND {} {} '{}'".format(column, operator, value)
+        return self
+
+    def or_(self, column: str, operator: str, value: str) -> QueryConstructor:
+        """Add an or clause"""
+        self.query += " OR {} {} '{}'".format(column, operator, value)
+        return self
+
+    def order_by(self, column: str, order: str = "ASC") -> QueryConstructor:
+        """Add an order by clause"""
+        self.query += " ORDER BY {} {}".format(column, order)
+        return self
+
+    def limit(self, limit: int) -> QueryConstructor:
+        """Add a limit clause"""
+        self.query += " LIMIT {}".format(limit)
+        return self
+
+    def get_query(self) -> str:
+        """Get the query"""
+        return self.query
+
+    def execute(self,  params: tuple = None) -> list:
+        """Execute the query"""
+        return self.db.execute(self.query, params)
 
 
 if __name__ == "__main__":  # Verify if the script is being executed directly
