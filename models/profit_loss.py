@@ -2,7 +2,7 @@ from pydantic import BaseModel
 import datetime
 
 
-class profit_loss(BaseModel):
+class ProfitLoss(BaseModel):
     __table__ = "profit_loss"
 
     customer_id: str

@@ -1,6 +1,8 @@
 import time
+import datetime
+
 from fastapi import APIRouter, Request, Response
-from services import ClientService
+from repositories import ClientRepository
 router = APIRouter()
 
 
@@ -16,4 +18,4 @@ async def get_client_investments(customerId: str, request: Request):
     date = request.query_params.get("date", None)
 
     # Get a client and its investments
-    return ClientService.get_client_investments(customerId, date)
+    return ClientService.get_avaliable_investments(customerId, date)

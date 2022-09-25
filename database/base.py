@@ -293,6 +293,15 @@ class QueryConstructor:
             column, ",".join(map(str, array)))
         return self
 
+    def insert(self, data: dict) -> QueryConstructor:
+        """Insert data into a table"""
+        self.query += "INSERT INTO {} ({}) VALUES ({})".format(
+            self.table.__table__, ", ".join(data.keys()), ", ".join(["%s"] * len(data)))
+        self.result = list(data.values())
+
+        self.execute(tuple(data.values()))
+        return self
+
     def execute(self,  params: tuple = None) -> list:
         """Execute the query"""
         self.results = db.execute(self.query, params)

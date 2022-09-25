@@ -3,7 +3,7 @@ from models import Client, Bank, Investment
 import datetime
 
 
-class ClientService:
+class ClientRepository:
     def get_all():
         query = QueryConstructor(Client)
         query.select().execute()
@@ -25,7 +25,7 @@ class ClientService:
             del clients[i]["investments_ids"]
         return clients
 
-    def get_client_investments(customer_id: str, date: str = None):
+    def get_investments(customer_id: str, date: str = None, avaliable=True):
         query = QueryConstructor(Client)
         query.select().execute()
         if len(query.results) == 0:
@@ -35,7 +35,7 @@ class ClientService:
         query_investments = QueryConstructor(Investment)
         query_investments.select().where_in_array(
             "id", client["investments_ids"])
-        query_investments.and_("sell_date", "=", None)
+        query_investments.and_("sell_date", "=" if avaliable else "!=", None)
 
         if date:
             date = datetime.datetime.strptime(date, "%Y-%m")
