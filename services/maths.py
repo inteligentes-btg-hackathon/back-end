@@ -4,15 +4,36 @@ from datetime import datetime
 
 
 class TaxCalculator:
-    CRIPTO_PRICES = {
-        range(0, 35001): 0.15,
-        range(35001, 5000001): 0.15,
-        range(5000001, 100000001): 0.175,
-        range(100000001, 300000001): 0.2,
-        range(300000001, math.inf): 0.225,
-    }
+    def get_cripto_price(value: float):
+        CRIPTO_PRICES = [
+            {
+                "range": range(0, 35001),
+                "result": 0.15,
+            },
+            {
+                "range": range(35001, 5000001),
+                "result": 0.15,
+            },
+            {
+                "range": range(5000001, 100000001),
+                "result": 0.175,
+            },
+            {
+                "range": range(100000001, 300000001),
+                "result": 0.2,
+            },
+            {
+                "else": 0.225,
+            }
+        ]
 
-    def taxes(investments_this_month_sold, investments_last_month, last_taxes):
+        for cripto_price in CRIPTO_PRICES:
+            if (cripto_price.get("else", None)):
+                return cripto_price["else"]
+            if value in cripto_price["range"]:
+                return cripto_price["result"]
+
+    def taxes(investments_this_month_sold, investments_last_month, current_date, last_taxes={"day_trade_accumulated_loss": 0, "swing_accumulated_loss": 0, "fii_loss": 0, "cripto_accumulated_loss": 0}):
         investments = {}
 
         taxes = {}
@@ -24,9 +45,11 @@ class TaxCalculator:
         fii_profit = 0
         sum_taxes = 0
 
-        for investment_this_month in investments_this_month_sold:
-            index = investments_last_month.index(
-                investment_this_month["name"])
+        for (i, investment_this_month) in enumerate(investments_last_month):
+            if investment_this_month["name"] == investment_this_month["name"]:
+                index = i
+                break
+
             investments["name"] = {
                 "name": investment_this_month["name"],
                 "bank_id": investment_this_month["bank_id"],
@@ -106,12 +129,13 @@ class TaxCalculator:
                     "sell_date": item["sell_date"],
                     "exempt": cripto_exempt,
                     "modality": "not relevant",
-                    "taxes": item["profit"]*CRIPTO_PRICES[math.floor(item[cripto_sum])],
+                    "taxes": item["profit"]*TaxCalculator.get_cripto_price(math.floor(item[cripto_sum])),
                     "sell_value": item["sell_price"]
                 }
                 cripto_profit += item["profit"]
                 sum_taxes += item["profit"] * \
-                    CRIPTO_PRICES[math.floor(item[cripto_sum])]
+                    TaxCalculator.get_cripto_price(
+                        math.floor(item[cripto_sum]))
             elif item["type"] == "ações" and stock_exempt:
                 taxes[item["name"]] = {
                     "name": item["name"],
@@ -158,22 +182,20 @@ class TaxCalculator:
                 }
                 sum_taxes += item["profit"]*0.15
         return {
-            "customer_id ": investment_this_month["customer_id"],
             "day_trade_profit": (lambda x: x if x > 0 else 0)(day_trade_profit),
             "swing_trade_profit": (lambda x: x if x > 0 else 0)(swing_trade_profit),
             "cripto_profit": (lambda x: x if x > 0 else 0)(cripto_profit),
             "fii_profit": (lambda x: x if x > 0 else 0)(fii_profit),
             "day_trade_accumulated_loss": last_taxes["day_trade_accumulated_loss"]+(lambda x: x if x < 0 else 0)(day_trade_profit),
             'swing_trade_accumulated_loss': last_taxes["swing_accumulated_loss"]+(lambda x: x if x < 0 else 0)(swing_trade_profit),
-            "fii_loss": last_taxes["fii_loss"]+(lambda x: x if x < 0 else 0)(fii_profit),
+            "fii_accumulated_loss": last_taxes["fii_loss"]+(lambda x: x if x < 0 else 0)(fii_profit),
             'cripto_accumulated_loss': last_taxes["cripto_accumulated_loss"]+(lambda x: x if x < 0 else 0)(cripto_profit),
             "taxes": sum_taxes,
-            'date': datetime.datetime.strptime(investment_this_month[0]["date"], "%Y-%m-%d %H:%M:%S").month
-        },
+            'date': datetime.strptime(current_date, "%Y-%m").replace(day=1).strftime("%Y-%m-%d"),
+        }
 
     def cuts(this_taxes):
         return {
-            "customer_id ": this_taxes["customer_id"],
             "day_trade_profit": this_taxes['day_trade_profit'],
             "swing_trade_profit": this_taxes["swing_trade_profit"],
             "cripto_profit": this_taxes["cripto_profit"],
@@ -182,6 +204,6 @@ class TaxCalculator:
             'swing_trade_accumulated_loss': (lambda x, y: 0 if y > x else x-y)(this_taxes["swing_trade_accumulated_loss"], this_taxes['swing_trade_profit']),
             "fii_accumulated_loss": (lambda x, y: 0 if y > x else x-y)(this_taxes["fii_accumulated_loss"], this_taxes['fii_profit']),
             'cripto_accumulated_loss': (lambda x, y: 0 if y > x else x-y)(this_taxes["cripto_accumulated_loss"], this_taxes['cripto_profit']),
-            "taxes": (this_taxes["day_trade_profit"] - this_taxes["day_trade_accumulated_loss"])*0.2+(this_taxes["swing_trade_profit"]-this_taxes["swing_trade_accumulated_loss"])*0.15+(this_taxes["cripto_profit"]-this_taxes["cripto_accumulated_loss"])*CRIPTO_PRICES[math.floor(this_taxes["cripto_profit"])]+(this_taxes["fii_profit"]-this_taxes["fii_profit_accumulated_loss"])*0.2,
+            "taxes": (this_taxes["day_trade_profit"] - this_taxes["day_trade_accumulated_loss"])*0.2+(this_taxes["swing_trade_profit"]-this_taxes["swing_trade_accumulated_loss"])*0.15+(this_taxes["cripto_profit"]-this_taxes["cripto_accumulated_loss"])*TaxCalculator.get_cripto_price(math.floor(this_taxes["cripto_profit"]))+(this_taxes["fii_profit"]-this_taxes["fii_accumulated_loss"])*0.2,
             'date': this_taxes["date"]
         }

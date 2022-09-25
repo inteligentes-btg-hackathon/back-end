@@ -17,6 +17,7 @@ class ProfitLoss(BaseModel):
     accumulated_loss: list[int]
     date: datetime.date
     taxes: float
+    pending: bool
 
     def headers() -> list:
         return [

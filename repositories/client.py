@@ -1,6 +1,7 @@
 from database import db, QueryConstructor
 from models import Client, Bank, Investment
 import datetime
+from services import TaxCalculator
 
 
 class ClientRepository:
@@ -26,18 +27,19 @@ class ClientRepository:
         return clients
 
     def get_investments(customer_id: str, date: str = None, avaliable=True):
+        print(customer_id, date, avaliable)
         query_client = QueryConstructor(Client)
         query_client.select()
 
         if (customer_id != None):
-            query_client.where("id", customer_id)
+            query_client.where("customer_id", '=', customer_id)
 
         query_client.execute()
 
-        if len(query.results) == 0:
+        if len(query_client.results) == 0:
             return None
 
-        client = query.results[0]
+        client = query_client.results[0]
         query_investments = QueryConstructor(Investment)
         query_investments.select().where_in_array(
             "id", client["investments_ids"])
@@ -47,10 +49,33 @@ class ClientRepository:
                 "sell_date", "=" if avaliable else "!=", None)
 
         if date:
-            date = datetime.datetime.strptime(date, "%Y-%m")
             query_investments.and_("to_char(buy_date, 'YYYY-MM')",
-                                   "=", date.strftime("%Y-%m"))
+                                   "=", date)
 
         query_investments.execute()
 
         return query_investments.results
+
+    def calculate_tax(customer_id: str, date: str = None):
+        yesterday = datetime.datetime.strptime(
+            date, "%Y-%m") - datetime.timedelta(days=1)
+        yesterday = yesterday.strftime("%Y-%m")
+
+        investments_yesterday = ClientRepository.get_investments(
+            customer_id, yesterday, None)
+        investments_today = []
+
+        for investment in ClientRepository.get_investments(customer_id, None, None):
+            if investment.get("sell_date", False) and investment["sell_date"].strftime("%Y-%m") == date:
+                investments_today.append(investment)
+
+        print(investments_today)
+        print(investments_yesterday)
+        taxes = TaxCalculator.taxes(
+            investments_today, investments_yesterday, date)
+
+        cuts = TaxCalculator.cuts(taxes)
+
+        return {
+            "taxes": cuts
+        }

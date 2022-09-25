@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from middlewares import process_time, security
 from configurations import *
-from routes import client
+from routes import client, transactions
 import uvicorn
 
 
@@ -14,6 +14,7 @@ security.setup(app)
 
 # Adding routes to the app
 app.include_router(client.router, prefix="/mockup", tags=["client"])
+app.include_router(transactions.router, tags=["transactions"])
 
 if __name__ == "__main__":
     config = uvicorn.Config("server:app", port=3232, log_level="info")
