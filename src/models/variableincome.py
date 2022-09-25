@@ -1,8 +1,9 @@
 from pydantic import BaseModel
 from datetime import date
 
+
 class VariableIncome(BaseModel):
-    
+
     customer_id: int
     bank_id: int
     name: str

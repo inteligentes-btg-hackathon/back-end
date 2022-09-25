@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from datetime import date
 
+
 class FixedIncome(BaseModel):
 
     customer_id: int
@@ -14,4 +15,3 @@ class FixedIncome(BaseModel):
     date: date
     price: float
     rate: float
-		
