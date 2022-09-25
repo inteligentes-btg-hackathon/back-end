@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS profit_loss (
   fii_profit float,
   day_trade_accumulated_loss float,
   swing_trade_accumulated_loss float,
-  fii_loss float,
+  fii_acucumulated_loss float,
   cripto_accumulated_loss float,
   acumulated_loss float,
   date date

@@ -11,7 +11,7 @@ class profit_loss(BaseModel):
     fii_profit :float
     day_trade_accumulated_loss :float
     swing_trade_accumulated_loss :float
-    fii_loss :float
+    fii_accumulated_loss :float
     cripto_accumulated_loss :float
     date: date
     taxes: float
@@ -25,7 +25,7 @@ class profit_loss(BaseModel):
             "fii_profit",
             "day_trade_accumulated_loss",
             "swing_trade_accumulated_loss",
-            "fii_loss",
+            "fii_accumulated_loss",
             "cripto_accumulated_loss",
             "date",
             "taxes"

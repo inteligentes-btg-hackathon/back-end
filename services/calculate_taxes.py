@@ -60,8 +60,9 @@ def calculate_taxes(investments_this_month, investments_last_month, last_taxes):
                 "sell_date": item["sell_date"],
                 "exempt": False,
                 "modality": "day_trade",
-                "taxes": item["profit"]*0.2
-            }
+                "taxes": item["profit"]*0.2,
+                "sell_value": item["sell_price"] 
+            }  
             sum_taxes += item["profit"]*0.2
             day_trade_profit +=item["profit"]
         elif (item["type"] == "fundos_imobiliários"):
@@ -74,8 +75,9 @@ def calculate_taxes(investments_this_month, investments_last_month, last_taxes):
                 "sell_date": item["sell_date"],
                 "exempt": False,
                 "modality": "not relevant",
-                "taxes": item["profit"]*0.2
-            }
+                "taxes": item["profit"]*0.2,
+                "sell_value": item["sell_price"] 
+            }  
             fii_profit += item["profit"]
             sum_taxes += item["profit"]*0.2
         elif(item["type"] in ["BDR", "ETF", "fundo de ações"]):
@@ -88,8 +90,9 @@ def calculate_taxes(investments_this_month, investments_last_month, last_taxes):
                 "sell_date": item["sell_date"],
                 "exempt": False,
                 "modality": "not relevant",
-                "taxes": item["profit"]*0.15
-            }
+                "taxes": item["profit"]*0.15,
+                "sell_value": item["sell_price"] 
+            }  
             swing_trade_profit += item["profit"]
             sum_taxes += item["profit"]*0.15
 
@@ -104,8 +107,9 @@ def calculate_taxes(investments_this_month, investments_last_month, last_taxes):
                 "sell_date": item["sell_date"],
                 "exempt": cripto_exempt,
                 "modality": "not relevant",
-                "taxes": item["profit"]*cripto_prices[math.floor(item[cripto_sum])]
-            }
+                "taxes": item["profit"]*cripto_prices[math.floor(item[cripto_sum])],
+                "sell_value": item["sell_price"]  
+            } 
             cripto_profit += item["profit"]
             sum_taxes += item["profit"]*cripto_prices[math.floor(item[cripto_sum])]
         elif item["type"] == "ações" and stock_exempt:
@@ -119,7 +123,8 @@ def calculate_taxes(investments_this_month, investments_last_month, last_taxes):
                 "sell_date": item["sell_date"],
                 "exempt": stock_exempt,
                 "modality": "not relevant",
-                "taxes": 0
+                "taxes": 0,
+                "sell_value": item["sell_price"]   
             }
             swing_trade_profit +=item["profit"]
         elif item["type"] == "ações" and not stock_exempt:
@@ -133,7 +138,8 @@ def calculate_taxes(investments_this_month, investments_last_month, last_taxes):
                 "sell_date": item["sell_date"],
                 "exempt": stock_exempt,
                 "modality": "not relevant",
-                "taxes": item["profit"]*0.15
+                "taxes": item["profit"]*0.15,
+                "sell_value": item["sell_price"]   
             }
             
             sum_taxes += item["profit"]*0.15
@@ -147,8 +153,9 @@ def calculate_taxes(investments_this_month, investments_last_month, last_taxes):
                 "sell_date": item["sell_date"],
                 "exempt": False,
                 "modality": "not relevant",
-                "taxes": item["profit"]*0.15
-            }
+                "taxes": item["profit"]*0.15,
+                "sell_price": item["sell_price"]  
+            } 
             sum_taxes += item["profit"]*0.15
     return {
             "customer_id ":investment_this_month["customer_id"],
@@ -156,11 +163,11 @@ def calculate_taxes(investments_this_month, investments_last_month, last_taxes):
             "swing_trade_profit" :(lambda x: x if x>0 else 0 )(swing_trade_profit),
             "cripto_profit" :(lambda x: x if x>0 else 0 )(cripto_profit),
             "fii_profit" :(lambda x: x if x>0 else 0 )(fii_profit),
-            "day_trade_accumulated_loss" :(lambda x: x if x<0 else 0 )(day_trade_profit) ,
-            'swing_trade_accumulated_loss':(lambda x: x if x<0 else 0 )(swing_trade_profit) ,
-            "fii_loss" :(lambda x: x if x<0 else 0 )(fii_profit) ,
-            'cripto_accumulated_loss':(lambda x: x if x<0 else 0 )(cripto_profit) ,
-            "acumulated_loss": (lambda x: x if x<0 else 0 )(0),
+            "day_trade_accumulated_loss" :last_taxes["day_trade_accumulated_loss"]+(lambda x: x if x<0 else 0 )(day_trade_profit) ,
+            'swing_trade_accumulated_loss':last_taxes["swing_accumulated_loss"]+(lambda x: x if x<0 else 0 )(swing_trade_profit) ,
+            "fii_loss" :last_taxes["fii_loss"]+(lambda x: x if x<0 else 0 )(fii_profit) ,
+            'cripto_accumulated_loss':last_taxes["cripto_accumulated_loss"]+(lambda x: x if x<0 else 0 )(cripto_profit) ,
+            "acumulated_loss": last_taxes["acumulated_loss"]+(lambda x: x if x<0 else 0 )(0),
             "taxes": sum_taxes,
             'date' : datetime.datetime.strptime(investment_this_month[0]["date"], "%Y-%m-%d %H:%M:%S").month
         }
