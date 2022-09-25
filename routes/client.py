@@ -1,10 +1,10 @@
 import time
 from fastapi import APIRouter, Request, Response
-from services import Client
+from services import ClientService
 router = APIRouter()
 
 
 @router.get("/clients")
 async def get_clients(request: Request):
     # Get all clients
-    return Client.get_all()
+    return ClientService.get_all()

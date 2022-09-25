@@ -41,6 +41,116 @@ class Database:
         except Exception as e:
             print("Database connection failed due to {}".format(e))
 
+    def seed_db(self):
+        # Table banks
+        self.add_seed('banks', {
+            "brand": "BTG Pactual",
+            "cnpj": "12345678901234",
+        })
+
+        self.add_seed('banks', {
+            "brand": "NuBank",
+            "cnpj": "19283192321312",
+        })
+
+        self.add_seed('banks', {
+            "brand": "Itau Unibanco",
+            "cnpj": "12928912932231",
+        })
+
+        # Table clients
+        self.add_seed("clients", {
+            "customer_id": "44801389864",
+            "banks_ids": [0, 1, 2],
+            "investments_ids": [0, 1]
+        })
+
+        self.add_seed("clients", {
+            "customer_id": "19293829293",
+            "banks_ids": [2],
+            "investments_ids": [3]
+        })
+
+        # Table investments
+        self.add_seed("investments", {
+            "bank_id": 0,
+            "name": None,
+            "itype": None,
+            "exempt": None,
+            "interest_rate": None,
+            "sell_date": None,
+            "date": None,
+            "price": None,
+            "rate": None
+        })
+
+        self.add_seed("investments", {
+            "bank_id": 1,
+            "name": None,
+            "itype": None,
+            "exempt": None,
+            "interest_rate": None,
+            "sell_date": None,
+            "date": None,
+            "price": None,
+            "rate": None
+        })
+
+        self.add_seed("investments", {
+            "bank_id": 2,
+            "name": None,
+            "itype": None,
+            "exempt": None,
+            "interest_rate": None,
+            "sell_date": None,
+            "date": None,
+            "price": None,
+            "rate": None
+        })
+
+        # Table profit_loss
+        # self.add_seed('profit_loss', {
+        #    "customer_id": "44801389864",
+        #    "day_trade_profit": None,
+        #    "swing_trade_profit": None,
+        #    "cripto_profit": None,
+        #    "fi_profit": None,
+        #    "day_trade_accumulated_loss": None,
+        #    "swing_trade_accumulated_loss": None,
+        #    "fi_loss": None,
+        #    "cripto_accumulated_loss": None,
+        #    "acumulated_loss": None,
+        #    "date": None
+        # })
+
+        # self.add_seed('profit_loss', {
+        #    "customer_id": "44801389864",
+        #    "day_trade_profit": None,
+        #    "swing_trade_profit": None,
+        #    "cripto_profit": None,
+        #    "fi_profit": None,
+        #    "day_trade_accumulated_loss": None,
+        #    "swing_trade_accumulated_loss": None,
+        #    "fi_loss": None,
+        #    "cripto_accumulated_loss": None,
+        #    "acumulated_loss": None,
+        #    "date": None
+        # })
+
+        # self.add_seed('profit_loss', {
+        #    "customer_id": "44801389864",
+        #    "day_trade_profit": None,
+        #    "swing_trade_profit": None,
+        #    "cripto_profit": None,
+        #    "fi_profit": None,
+        #    "day_trade_accumulated_loss": None,
+        #    "swing_trade_accumulated_loss": None,
+        #    "fi_loss": None,
+        #    "cripto_accumulated_loss": None,
+        #    "acumulated_loss": None,
+        #    "date": None
+        # })
+
     def run_sql_from_file(self, filepath: str) -> None:
         """Run a SQL file"""
 
@@ -62,11 +172,28 @@ class Database:
             except Exception as e:
                 print("Command skipped: {} due to:\n{}".format(command, e))
 
+    def add_seed(self, table: str, data: dict) -> None:
+        """Add seed data to a table"""
+        try:
+            cur = self.conn.cursor()
+            cur.execute("INSERT INTO {} ({}) VALUES ({})".format(
+                table, ", ".join(data.keys()), ", ".join(["%s"] * len(data))), list(data.values()))
+            self.conn.commit()
+        except Exception as e:
+            print("Query failed due to {}".format(e))
+
     def setup(self) -> None:
         """Setup the database"""
         print("Setting up the database...")
         self.run_sql_from_file("database/sql_assets/schema.sql")
         print("Database setup complete!")
+        print("\n")
+        print("Want to add seed data? Y/N")
+        if input().lower() == "y":
+            self.seed_db()
+            print("Seed data added!")
+        else:
+            print("Skipping seed data...")
 
     def execute(self, query: str, params: tuple = None) -> list:
         """Execute a query"""
@@ -136,10 +263,6 @@ class QueryConstructor:
 
         self.results = [dict(zip(self.items, i)) for i in self.results]
 
-
-if __name__ == "__main__":  # Verify if the script is being executed directly
-    database = Database()  # Create a database object
-    database.setup()  # Setup the database
 
 # Create database object instance
 db = Database()  # Create a database object

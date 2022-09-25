@@ -2,7 +2,7 @@ from database import db, QueryConstructor
 from models import Client, Bank, Investment
 
 
-class Client:
+class ClientService:
     def get_all():
         query = QueryConstructor(Client)
         query.select().execute()
@@ -22,3 +22,4 @@ class Client:
 
             clients[i]["investments"] = query_investments.results
             del clients[i]["investments_ids"]
+        return clients

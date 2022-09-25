@@ -1,6 +1,5 @@
 CREATE TABLE IF NOT EXISTS investments (
-  id int PRIMARY KEY NOT NULL UNIQUE,
-  customer_id varchar NOT NULL,
+  id SERIAL PRIMARY KEY NOT NULL UNIQUE,
   bank_id int NOT NULL,
   name varchar,
   itype varchar DEFAULT 'Outros',
@@ -12,7 +11,7 @@ CREATE TABLE IF NOT EXISTS investments (
 );
 
 CREATE TABLE IF NOT EXISTS banks (
-  id int PRIMARY KEY NOT NULL UNIQUE,
+  id SERIAL PRIMARY KEY NOT NULL UNIQUE,
   brand varchar,
   cnpj varchar
 );
