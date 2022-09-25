@@ -258,7 +258,12 @@ class QueryConstructor:
 
     def is_null(self, column: str) -> QueryConstructor:
         """Add a where clause for null values"""
-        self.query += " WHERE {} IS NULL".format(column)
+        self.query += " AND {} IS NULL".format(column)
+        return self
+
+    def is_not_null(self, column: str) -> QueryConstructor:
+        """Add a where clause for not null values"""
+        self.query += " AND {} IS NOT NULL".format(column)
         return self
 
     def and_(self, column: str, operator: str, value: str) -> QueryConstructor:

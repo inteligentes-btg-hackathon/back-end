@@ -15,7 +15,7 @@ class ProfitLoss(BaseModel):
     fii_accumulated_loss: float
     cripto_accumulated_loss: float
     accumulated_loss: list[int]
-    date: datetime.date
+    generate_date: datetime.date
     taxes: float
     pending: bool
 
@@ -31,6 +31,7 @@ class ProfitLoss(BaseModel):
             "fii_accumulated_loss",
             "cripto_accumulated_loss",
             "accumulated_loss"
-            "date",
-            "taxes"
+            "generate_date",
+            "taxes",
+            "pending"
         ]

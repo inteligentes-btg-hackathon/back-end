@@ -1,5 +1,5 @@
 from database import db, QueryConstructor
-from models import Client, Bank, Investment
+from models import Client, Bank, Investment, ProfitLoss
 import datetime
 from services import TaxCalculator
 
@@ -27,7 +27,6 @@ class ClientRepository:
         return clients
 
     def get_investments(customer_id: str, date: str = None, avaliable=True):
-        print(customer_id, date, avaliable)
         query_client = QueryConstructor(Client)
         query_client.select()
 
@@ -45,16 +44,33 @@ class ClientRepository:
             "id", client["investments_ids"])
 
         if (avaliable != None):
-            query_investments.and_(
-                "sell_date", "=" if avaliable else "!=", None)
+            if not avaliable:
+                query_investments.is_null("sell_date")
+            else:
+                query_investments.is_not_null("sell_date")
 
         if date:
-            query_investments.and_("to_char(buy_date, 'YYYY-MM')",
-                                   "=", date)
+            if(avaliable):
+                query_investments.and_("to_char(buy_date, 'YYYY-MM')",
+                                       "=", date)
+            else:
+                query_investments.and_("to_char(sell_date, 'YYYY-MM')",
+                                       "=", date)
 
         query_investments.execute()
 
         return query_investments.results
+
+    def get_profit_loss(customer_id: str, date: str = None):
+        query_profit_loss = QueryConstructor(ProfitLoss)
+        query_profit_loss.select().where("customer_id", "=", customer_id)
+
+        if date:
+            query_profit_loss.and_("to_char(date, 'YYYY-MM')", "=", date)
+
+        query_profit_loss.execute()
+
+        return query_profit_loss.results
 
     def calculate_tax(customer_id: str, date: str = None):
         yesterday = datetime.datetime.strptime(
@@ -68,14 +84,12 @@ class ClientRepository:
         for investment in ClientRepository.get_investments(customer_id, None, None):
             if investment.get("sell_date", False) and investment["sell_date"].strftime("%Y-%m") == date:
                 investments_today.append(investment)
+        print("investments_today:", investments_today)
+        print("investments_yesterday:", investments_yesterday)
 
-        print(investments_today)
-        print(investments_yesterday)
         taxes = TaxCalculator.taxes(
             investments_today, investments_yesterday, date)
 
-        cuts = TaxCalculator.cuts(taxes)
-
         return {
-            "taxes": cuts
+            "taxes": taxes
         }

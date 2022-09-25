@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS profit_loss (
   fii_accumulated_loss float,
   cripto_accumulated_loss float,
   accumulated_loss int ARRAY,
-  date date,
+  generate_date date,
   taxes FLOAT,
   pending BOOL DEFAULT FALSE
 );

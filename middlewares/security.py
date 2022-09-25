@@ -17,4 +17,7 @@ def setup(app: FastAPI) -> None:
         """Remove the server header"""
         response = await call_next(request)
         response.headers["content-type"] = "application/json"
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Headers"] = "*"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
         return response
