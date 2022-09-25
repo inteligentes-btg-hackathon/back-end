@@ -10,9 +10,8 @@ class Investment(BaseModel):
     name: str
     itype: str
     exempt: bool
-    interest_rate: float
     minimal_value: float
-    maturity: date
+    sell_date: date
     date: date
     price: float
     rate: float
@@ -24,9 +23,8 @@ class Investment(BaseModel):
             "name",
             "itype",
             "exempt",
-            "interest_rate",
             "minimal_value",
-            "maturity",
+            "sell_date",
             "date",
             "price",
             "rate",
