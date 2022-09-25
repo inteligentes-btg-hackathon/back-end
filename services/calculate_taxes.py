@@ -2,15 +2,15 @@ import datetime
 import math
 
 
-def calculate_taxes(investments_this_month, investments_last_month, last_taxes):
+def calculate_taxes(investments_this_month_sold, investments_last_month, last_taxes):
     investments = {}
-    investments_sell_dates = []
+
     cripto_prices = {
         range(0, 35001): 0.15,
         range(35001, 5000001): 0.15,
         range(5000001, 100000001): 0.175,
         range(100000001, 300000001): 0.2,
-        range(300000001, math.inf): 0.2,
+        range(300000001, math.inf): 0.225,
     }
     taxes = {}
     cripto_sum = 0
@@ -21,26 +21,22 @@ def calculate_taxes(investments_this_month, investments_last_month, last_taxes):
     fii_profit =0
     sum_taxes =0
     
-    
-    for investment_last_month in investments_last_month:
-        investments_sell_dates.append(investment_last_month["sell_date"])
 
-    for investment_this_month in investments_this_month:
+    for investment_this_month in investments_this_month_sold:
         index = investments_last_month.index(investment_this_month["name"])
-        if investment_this_month["sell_date"] and not list(investments_last_month)[index]["sell date"]:
-            investments["name"] = {
-                "name": investment_this_month["name"],
-                "bank_id": investment_this_month["bank_id"],
-                "type": investment_this_month["type"],
-                "rate": investment_this_month["rate"],
-                "buy_date": investment_this_month["date"],
-                "sell_date": investment_this_month["sell_date"],
-                "exempt": False,
-                "profit": investment_this_month["price"] - list(investments_last_month)[index]["price"]
-            }
+        investments["name"] = {
+            "name": investment_this_month["name"],
+            "bank_id": investment_this_month["bank_id"],
+            "type": investment_this_month["type"],
+            "rate": investment_this_month["rate"],
+            "buy_date": investment_this_month["date"],
+            "sell_date": investment_this_month["sell_date"],
+            "exempt": False,
+            "profit": investment_this_month["price"] - list(investments_last_month)[index]["price"]
+        }
 
     for item in investments:
-        if item["type"] == "criptoativos":
+        if item["type"] == "criptoativo":
             cripto_sum += item["profit"]
         elif item["type"] == "ação" and (item["sell_date"]-item["buy_date"]).days < 1:
             stocks_sum += item["profit"]
@@ -65,7 +61,7 @@ def calculate_taxes(investments_this_month, investments_last_month, last_taxes):
             }  
             sum_taxes += item["profit"]*0.2
             day_trade_profit +=item["profit"]
-        elif (item["type"] == "fundos_imobiliários"):
+        elif (item["type"] == "fundo_imobiliário"):
             taxes[item["name"]] = {
                 "name": item["name"],
                 "bank_id": item["bank_id"],
@@ -167,8 +163,8 @@ def calculate_taxes(investments_this_month, investments_last_month, last_taxes):
             'swing_trade_accumulated_loss':last_taxes["swing_accumulated_loss"]+(lambda x: x if x<0 else 0 )(swing_trade_profit) ,
             "fii_loss" :last_taxes["fii_loss"]+(lambda x: x if x<0 else 0 )(fii_profit) ,
             'cripto_accumulated_loss':last_taxes["cripto_accumulated_loss"]+(lambda x: x if x<0 else 0 )(cripto_profit) ,
-            "acumulated_loss": last_taxes["acumulated_loss"]+(lambda x: x if x<0 else 0 )(0),
+            "acumulated_loss": taxes,
             "taxes": sum_taxes,
             'date' : datetime.datetime.strptime(investment_this_month[0]["date"], "%Y-%m-%d %H:%M:%S").month
-        }
+        },
 
