@@ -42,23 +42,24 @@ class Database:
 
     def run_sql_from_file(self, filepath: str) -> None:
         """Run a SQL file"""
-        try:
-            # Open and read the file as a single buffer
-            fd = open(filepath, 'r')
-            sql_file = fd.read()
-            fd.close()
 
-            # All SQL commands (split on ';')
-            sql_commands = sql_file.split(';')
+        # Open and read the file as a single buffer
+        fd = open(filepath, 'r')
+        sql_file = fd.read()
+        fd.close()
 
-            # Execute every command from the input file
-            for command in sql_commands:
+        # All SQL commands (split on ';')
+        sql_commands = sql_file.split(';')
+
+        # Execute every command from the input file
+        for command in sql_commands:
+            try:
                 if command.strip() != '':
                     self.conn.cursor().execute(command)
                     self.conn.commit()
 
-        except Exception as e:
-            print("Command skipped: {}".format(e))
+            except Exception as e:
+                print("Command skipped: {} due to:\n{}".format(command, e))
 
     def setup(self) -> None:
         """Setup the database"""
