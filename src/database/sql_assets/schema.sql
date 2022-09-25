@@ -23,4 +23,3 @@ CREATE TABLE IF NOT EXISTS clients (
   banks_id int ARRAY NOT NULL,
   investments_ids int ARRAY NOT NULL
 );
-

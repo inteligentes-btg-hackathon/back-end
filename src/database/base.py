@@ -122,6 +122,12 @@ class QueryConstructor:
         """Get the query"""
         return self.query
 
+    def where_in_array(self, column: str, array: list) -> QueryConstructor:
+        """Add a where in array clause"""
+        self.query += " WHERE {} = ANY(ARRAY[{}])".format(
+            column, ", ".join(array))
+        return self
+
     def execute(self,  params: tuple = None) -> list:
         """Execute the query"""
         return self.db.execute(self.query, params)
