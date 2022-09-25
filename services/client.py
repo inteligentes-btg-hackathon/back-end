@@ -1,5 +1,6 @@
 from database import db, QueryConstructor
 from models import Client, Bank, Investment
+import datetime
 
 
 class ClientService:
@@ -23,3 +24,24 @@ class ClientService:
             clients[i]["investments"] = query_investments.results
             del clients[i]["investments_ids"]
         return clients
+
+    def get_client_investments(customer_id: str, date: str = None):
+        query = QueryConstructor(Client)
+        query.select().execute()
+        if len(query.results) == 0:
+            return None
+
+        client = query.results[0]
+        query_investments = QueryConstructor(Investment)
+        query_investments.select().where_in_array(
+            "id", client["investments_ids"])
+        query_investments.and_("sell_date", "=", None)
+
+        if date:
+            date = datetime.datetime.strptime(date, "%Y-%m")
+            query_investments.and_("to_char(buy_date, 'YYYY-MM')",
+                                   "=", date.strftime("%Y-%m"))
+
+        query_investments.execute()
+
+        return query_investments.results

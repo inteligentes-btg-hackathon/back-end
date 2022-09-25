@@ -23,7 +23,7 @@ class Investment(BaseModel):
             "exempt",
             "minimal_value",
             "sell_date",
-            "date",
+            "buy_date",
             "price",
             "rate",
         ]

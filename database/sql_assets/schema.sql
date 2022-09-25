@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS investments (
   itype varchar DEFAULT 'Outros',
   exempt bool,
   sell_date date DEFAULT null,
-  date date,
+  buy_date date,
   price float,
   rate float
 );
@@ -33,6 +33,6 @@ CREATE TABLE IF NOT EXISTS profit_loss (
   fii_acucumulated_loss float,
   cripto_accumulated_loss float,
   acumulated_loss float,
-  date date
+  date date,
   taxes FLOAT
 );

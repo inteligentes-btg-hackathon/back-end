@@ -1,20 +1,20 @@
 from pydantic import BaseModel
-from datetime import date
+import datetime
 
 
 class profit_loss(BaseModel):
-
     __table__ = "profit_loss"
-    customer_id : str
-    day_trade_profit :float
-    swing_trade_profit :float
-    cripto_profit :float
-    fii_profit :float
-    day_trade_accumulated_loss :float
-    swing_trade_accumulated_loss :float
-    fii_accumulated_loss :float
-    cripto_accumulated_loss :float
-    date: date
+
+    customer_id: str
+    day_trade_profit: float
+    swing_trade_profit: float
+    cripto_profit: float
+    fii_profit: float
+    day_trade_accumulated_loss: float
+    swing_trade_accumulated_loss: float
+    fii_accumulated_loss: float
+    cripto_accumulated_loss: float
+    date: datetime.date
     taxes: float
 
     def headers() -> list:

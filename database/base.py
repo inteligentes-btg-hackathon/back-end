@@ -16,13 +16,12 @@ class Database:
             print("Connecting to database with environment: {}".format(
                 os.getenv("PYTHON_ENV")))
             if os.getenv('PYTHON_ENV') == 'production':  # If the environment is production
-                session = boto3.Session(
-                    profile_name='RDSCreds')  # AWS profile name
+                session = boto3.Session()  # AWS profile name
                 client = session.client('rds')  # AWS RDS client
 
                 # Get the credentials from AWS with the RDS / AWS info
                 token = client.generate_db_auth_token(DBHostname=os.getenv("AWS_ENDPOINT"), Port=os.getenv(
-                    "AWS_PORT"), DBUsername=os.getenv("AWS_USER"), Region=os.getenv("AWS_REGION"))
+                    "AWS_PORT"), DBUsername=os.getenv("AWS_USER"),  password=os.getenv("AWS_PASSWORD"), Region=os.getenv("AWS_REGION"))
 
                 # Connect to the database with the credentials
                 self.conn = psycopg2.connect(host=os.getenv("AWS_ENDPOINT"), port=os.getenv("AWS_PORT"), database=os.getenv("AWS_DBNAME"),
@@ -61,51 +60,82 @@ class Database:
         # Table clients
         self.add_seed("clients", {
             "customer_id": "44801389864",
-            "banks_ids": [0, 1, 2],
-            "investments_ids": [0, 1]
+            "banks_ids": [0, 1],
+            "investments_ids": [1, 2, 3]
         })
 
         self.add_seed("clients", {
             "customer_id": "19293829293",
             "banks_ids": [2],
-            "investments_ids": [3]
+            "investments_ids": [4, 5, 6]
         })
 
         # Table investments
         self.add_seed("investments", {
             "bank_id": 0,
-            "name": None,
-            "itype": None,
-            "exempt": None,
-            "interest_rate": None,
-            "sell_date": None,
-            "date": None,
-            "price": None,
+            "name": "brd2",
+            "itype": "ação",
+            "exempt": False,
+            "sell_date": "2021-02-01",
+            "buy_date": "2020-01-01",
+            "price": 1000,
             "rate": None
+        })
+
+        # Table investments
+        self.add_seed("investments", {
+            "bank_id": 0,
+            "name": "brd2",
+            "itype": "ação",
+            "exempt": False,
+            "sell_date": None,
+            "buy_date": "2020-01-01",
+            "price": 995,
+            "rate": 10
         })
 
         self.add_seed("investments", {
             "bank_id": 1,
-            "name": None,
-            "itype": None,
-            "exempt": None,
-            "interest_rate": None,
+            "name": "bras3",
+            "itype": "ação",
+            "exempt": False,
+            "sell_date": "2021-02-03",
+            "buy_date": "2020-01-01",
+            "price": 500,
+            "rate": 20
+        })
+
+        self.add_seed("investments", {
+            "bank_id": 1,
+            "name": "bras3",
+            "itype": "ação",
+            "exempt": False,
             "sell_date": None,
-            "date": None,
-            "price": None,
-            "rate": None
+            "buy_date": "2020-09-01",
+            "price": 510,
+            "rate": 20
         })
 
         self.add_seed("investments", {
             "bank_id": 2,
-            "name": None,
-            "itype": None,
-            "exempt": None,
-            "interest_rate": None,
-            "sell_date": None,
-            "date": None,
-            "price": None,
-            "rate": None
+            "name": "btg",
+            "itype": "fundo_imobiliário",
+            "exempt": False,
+            "sell_date": "2021-04-03",
+            "buy_date": "2020-01-01",
+            "price": 100,
+            "rate": 0
+        })
+
+        self.add_seed("investments", {
+            "bank_id": 2,
+            "name": "btg",
+            "itype": "fundo_imobiliário",
+            "exempt": False,
+            "sell_date": "2021-03-03",
+            "buy_date": "2020-01-01",
+            "price": 98,
+            "rate": 0
         })
 
         # Table profit_loss
@@ -226,9 +256,21 @@ class QueryConstructor:
         self.query += " WHERE {} {} '{}'".format(column, operator, value)
         return self
 
+    def is_null(self, column: str) -> QueryConstructor:
+        """Add a where clause for null values"""
+        self.query += " WHERE {} IS NULL".format(column)
+        return self
+
     def and_(self, column: str, operator: str, value: str) -> QueryConstructor:
         """Add an and clause"""
-        self.query += " AND {} {} '{}'".format(column, operator, value)
+        if isinstance(value, str):
+            value = "'{}'".format(value)
+
+        if value is None:
+            self.query += " AND {} IS NULL".format(column)
+        else:
+            self.query += " AND {} {} {}".format(column, operator, value)
+
         return self
 
     def or_(self, column: str, operator: str, value: str) -> QueryConstructor:
@@ -266,4 +308,4 @@ class QueryConstructor:
 
 # Create database object instance
 db = Database()  # Create a database object
-# db.setup()  # Setup the database
+db.setup()  # Setup the database
