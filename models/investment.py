@@ -5,7 +5,6 @@ from datetime import date
 class Investment(BaseModel):
     __table__ = "investments"
 
-    customer_id: str
     bank_id: int
     name: str
     itype: str
@@ -19,7 +18,6 @@ class Investment(BaseModel):
 
     def headers() -> list:
         return [
-            "customer_id",
             "bank_id",
             "name",
             "itype",

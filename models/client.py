@@ -12,5 +12,5 @@ class Client(BaseModel):
         return [
             "customer_id",
             "banks_ids",
-            "investments",
+            "investments_ids",
         ]
