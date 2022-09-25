@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS investments (
   customer_id int NOT NULL,
   bank_id int NOT NULL,
   name varchar,
-  type varchar DEFAULT 'Outros',
+  itype varchar DEFAULT 'Outros',
   exempt bool,
   interest_rate float,
   sell_date date DEFAULT null,

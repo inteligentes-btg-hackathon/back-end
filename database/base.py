@@ -1,4 +1,5 @@
 from __future__ import annotations
+from models import *
 import psycopg2
 import sys
 import boto3
@@ -79,7 +80,7 @@ class Database:
 
 
 class QueryConstructor:
-    def __init__(self, table: str) -> None:
+    def __init__(self, table: object) -> None:
         self.table = table
         self.query = ""
         self.result = None
@@ -87,10 +88,10 @@ class QueryConstructor:
     def select(self, columns: list = None) -> QueryConstructor:
         """Select columns"""
         if columns is None:
-            self.query += "SELECT * FROM {}".format(self.table)
+            self.query += "SELECT * FROM {}".format(self.table.__table__)
         else:
             self.query += "SELECT {} FROM {}".format(
-                ", ".join(columns), self.table)
+                ", ".join(columns), self.table.__table__)
         return self
 
     def where(self, column: str, operator: str, value: str) -> QueryConstructor:
@@ -136,6 +137,15 @@ class QueryConstructor:
     def execute(self,  params: tuple = None) -> list:
         """Execute the query"""
         self.result = db.execute(self.query, params)
+        self.result = self.result if self.result is not None else []
+
+        self.items = [i for i in self.table.headers()]
+        for item in self.items:
+            if item.startswith("_"):
+                self.items.remove(item)
+        print(self.items)
+
+        self.result = [dict(zip(self.items, i)) for i in self.result]
 
 
 if __name__ == "__main__":  # Verify if the script is being executed directly
