@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS profit_loss (
   swing_trade_accumulated_loss float,
   fii_accumulated_loss float,
   cripto_accumulated_loss float,
-  acumulated_loss float,
-  date date,
+  accumulated_loss int ARRAY,
+  date date
   taxes FLOAT
 );

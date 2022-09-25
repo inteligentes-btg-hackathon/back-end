@@ -14,6 +14,7 @@ class ProfitLoss(BaseModel):
     swing_trade_accumulated_loss: float
     fii_accumulated_loss: float
     cripto_accumulated_loss: float
+    accumulated_loss: list[int]
     date: datetime.date
     taxes: float
 
@@ -28,6 +29,7 @@ class ProfitLoss(BaseModel):
             "swing_trade_accumulated_loss",
             "fii_accumulated_loss",
             "cripto_accumulated_loss",
+            "accumulated_loss"
             "date",
             "taxes"
         ]

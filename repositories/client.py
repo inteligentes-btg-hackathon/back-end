@@ -26,8 +26,14 @@ class ClientRepository:
         return clients
 
     def get_investments(customer_id: str, date: str = None, avaliable=True):
-        query = QueryConstructor(Client)
-        query.select().execute()
+        query_client = QueryConstructor(Client)
+        query_client.select()
+
+        if (customer_id != None):
+            query_client.where("id", customer_id)
+
+        query_client.execute()
+
         if len(query.results) == 0:
             return None
 
@@ -35,7 +41,10 @@ class ClientRepository:
         query_investments = QueryConstructor(Investment)
         query_investments.select().where_in_array(
             "id", client["investments_ids"])
-        query_investments.and_("sell_date", "=" if avaliable else "!=", None)
+
+        if (avaliable != None):
+            query_investments.and_(
+                "sell_date", "=" if avaliable else "!=", None)
 
         if date:
             date = datetime.datetime.strptime(date, "%Y-%m")
