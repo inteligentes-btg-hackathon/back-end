@@ -61,13 +61,7 @@ class Database:
         self.add_seed("clients", {
             "customer_id": "44801389864",
             "banks_ids": [0, 1],
-            "investments_ids": [1, 2, 3]
-        })
-
-        self.add_seed("clients", {
-            "customer_id": "19293829293",
-            "banks_ids": [2],
-            "investments_ids": [4, 5, 6]
+            "investments_ids": [1, 2, 3,4,5,6]
         })
 
         # Table investments
