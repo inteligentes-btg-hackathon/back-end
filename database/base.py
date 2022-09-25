@@ -4,16 +4,16 @@ import sys
 import boto3
 import os
 
-if __name__ == "__main__":  # Verify if the script is being executed directly
-    # Load environment variables from .env file
-    from dotenv import load_dotenv
-    load_dotenv()
+# Load environment variables from .env file
+from dotenv import load_dotenv
+load_dotenv()
 
 
 class Database:
     def __init__(self) -> None:
         try:
-            print("Connecting to database...")
+            print("Connecting to database with environment: {}".format(
+                os.getenv("PYTHON_ENV")))
             if os.getenv('PYTHON_ENV') == 'production':  # If the environment is production
                 session = boto3.Session(
                     profile_name='RDSCreds')  # AWS profile name
@@ -64,7 +64,7 @@ class Database:
     def setup(self) -> None:
         """Setup the database"""
         print("Setting up the database...")
-        self.run_sql_from_file("src/database/sql_assets/schema.sql")
+        self.run_sql_from_file("database/sql_assets/schema.sql")
         print("Database setup complete!")
 
     def execute(self, query: str, params: tuple = None) -> list:
@@ -79,10 +79,10 @@ class Database:
 
 
 class QueryConstructor:
-    def __init__(self, table: str, db: Database) -> None:
+    def __init__(self, table: str) -> None:
         self.table = table
-        self.db = db
         self.query = ""
+        self.result = None
 
     def select(self, columns: list = None) -> QueryConstructor:
         """Select columns"""
@@ -108,11 +108,6 @@ class QueryConstructor:
         self.query += " OR {} {} '{}'".format(column, operator, value)
         return self
 
-    def order_by(self, column: str, order: str = "ASC") -> QueryConstructor:
-        """Add an order by clause"""
-        self.query += " ORDER BY {} {}".format(column, order)
-        return self
-
     def limit(self, limit: int) -> QueryConstructor:
         """Add a limit clause"""
         self.query += " LIMIT {}".format(limit)
@@ -128,11 +123,25 @@ class QueryConstructor:
             column, ", ".join(array))
         return self
 
+    def inner_join(self, table: str, column1: str, column2: str, alias: str = None) -> QueryConstructor:
+        """Add an inner join clause"""
+        if alias is None:
+            self.query += " INNER JOIN {} ON {} = {}".format(
+                table, column1, column2)
+        else:
+            self.query += " INNER JOIN {} AS {} ON {} = {}".format(
+                table, alias, column1, column2)
+        return self
+
     def execute(self,  params: tuple = None) -> list:
         """Execute the query"""
-        return self.db.execute(self.query, params)
+        self.result = db.execute(self.query, params)
 
 
 if __name__ == "__main__":  # Verify if the script is being executed directly
     database = Database()  # Create a database object
     database.setup()  # Setup the database
+
+# Create database object instance
+db = Database()  # Create a database object
+db.setup()  # Setup the database

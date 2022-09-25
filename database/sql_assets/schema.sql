@@ -20,6 +20,6 @@ CREATE TABLE IF NOT EXISTS banks (
 
 CREATE TABLE IF NOT EXISTS clients (
   customer_id varchar PRIMARY KEY NOT NULL UNIQUE,
-  banks_id int ARRAY NOT NULL,
-  investments_ids int ARRAY NOT NULL
+  banks_ids int ARRAY,
+  investments_ids int ARRAY
 );
