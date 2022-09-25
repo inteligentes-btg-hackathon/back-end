@@ -24,3 +24,16 @@ CREATE TABLE IF NOT EXISTS clients (
   investments_ids int ARRAY NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS clients (
+  customer_id varchar PRIMARY KEY NOT NULL UNIQUE,
+  day_trade_profit FLOAT,
+  swing_trade_profit FLOAT,
+  cripto_profit FLOAT,
+  fundos_imobiliarios_profit FLOAT,
+  day_trade_accumulated_loss FLOAT,
+  swing_trade_accumulated_loss FLOAT,
+    fundos_imobiliarios_loss FLOAT,
+  cripto_accumulated_loss FLOAT
+
+);
+
