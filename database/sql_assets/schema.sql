@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS investments (
   id int PRIMARY KEY NOT NULL UNIQUE,
-  customer_id int NOT NULL,
+  customer_id varchar NOT NULL,
   bank_id int NOT NULL,
   name varchar,
   itype varchar DEFAULT 'Outros',

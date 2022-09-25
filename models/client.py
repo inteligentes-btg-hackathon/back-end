@@ -6,9 +6,9 @@ class Client(BaseModel):
 
     customer_id: str
     banks_ids: list[str]
-    investments: list[str]
+    investments_ids: list[str]
 
-    def headers():
+    def headers() -> list:
         return [
             "customer_id",
             "banks_ids",

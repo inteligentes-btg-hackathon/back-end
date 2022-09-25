@@ -121,31 +121,20 @@ class QueryConstructor:
     def where_in_array(self, column: str, array: list) -> QueryConstructor:
         """Add a where in array clause"""
         self.query += " WHERE {} = ANY(ARRAY[{}])".format(
-            column, ", ".join(array))
-        return self
-
-    def inner_join(self, table: str, column1: str, column2: str, alias: str = None) -> QueryConstructor:
-        """Add an inner join clause"""
-        if alias is None:
-            self.query += " INNER JOIN {} ON {} = {}".format(
-                table, column1, column2)
-        else:
-            self.query += " INNER JOIN {} AS {} ON {} = {}".format(
-                table, alias, column1, column2)
+            column, ",".join(map(str, array)))
         return self
 
     def execute(self,  params: tuple = None) -> list:
         """Execute the query"""
-        self.result = db.execute(self.query, params)
-        self.result = self.result if self.result is not None else []
+        self.results = db.execute(self.query, params)
+        self.results = self.results if self.results is not None else []
 
         self.items = [i for i in self.table.headers()]
         for item in self.items:
             if item.startswith("_"):
                 self.items.remove(item)
-        print(self.items)
 
-        self.result = [dict(zip(self.items, i)) for i in self.result]
+        self.results = [dict(zip(self.items, i)) for i in self.results]
 
 
 if __name__ == "__main__":  # Verify if the script is being executed directly
