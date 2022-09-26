@@ -4,6 +4,7 @@ from configurations import *
 from routes import client, transactions, darf
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
+from fastapi.staticfiles import StaticFiles
 
 
 app = FastAPI()
@@ -13,7 +14,7 @@ CORS.setup(app)
 
 process_time.setup(app)
 security.setup(app)
-
+app.mount("/tmp", StaticFiles(directory="tmp"), name="static")
 # Adding routes to the app
 app.include_router(client.router, prefix="/mockup", tags=["client"])
 app.include_router(transactions.router, tags=["transactions"])

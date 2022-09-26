@@ -17,7 +17,7 @@ class ProfitLoss(BaseModel):
     accumulated_loss: list[int]
     generate_date: datetime.date
     taxes: float
-    pending: bool
+    paid: bool
 
     def headers() -> list:
         return [
@@ -30,8 +30,8 @@ class ProfitLoss(BaseModel):
             "swing_trade_accumulated_loss",
             "fii_accumulated_loss",
             "cripto_accumulated_loss",
-            "accumulated_loss"
+            "accumulated_loss",
             "generate_date",
             "taxes",
-            "pending"
+            "paid"
         ]

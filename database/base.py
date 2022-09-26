@@ -61,7 +61,7 @@ class Database:
         self.add_seed("clients", {
             "customer_id": "44801389864",
             "banks_ids": [0, 1],
-            "investments_ids": [1, 2, 3,4,5,6]
+            "investments_ids": [1, 2, 3, 4, 5, 6]
         })
 
         # Table investments
@@ -70,10 +70,12 @@ class Database:
             "name": "brd2",
             "itype": "ação",
             "exempt": False,
-            "sell_date": "2021-02-01",
-            "buy_date": "2020-01-01",
+            "sell_date": "2023-02-01",
+            "buy_date": "2023-01-01",
             "price": 1000,
-            "rate": None
+            "rate": None,
+            "sell_price": 1100,
+            "buy_price": 1000,
         })
 
         # Table investments
@@ -83,9 +85,11 @@ class Database:
             "itype": "ação",
             "exempt": False,
             "sell_date": None,
-            "buy_date": "2020-01-01",
+            "buy_date": "2023-01-01",
             "price": 995,
-            "rate": 10
+            "rate": 10,
+            "sell_price": 400,
+            "buy_price": 500,
         })
 
         self.add_seed("investments", {
@@ -93,10 +97,12 @@ class Database:
             "name": "bras3",
             "itype": "ação",
             "exempt": False,
-            "sell_date": "2021-02-03",
-            "buy_date": "2020-01-01",
+            "sell_date": "2023-02-03",
+            "buy_date": "2023-01-01",
             "price": 500,
-            "rate": 20
+            "rate": 20,
+            "sell_price": 322,
+            "buy_price": 233,
         })
 
         self.add_seed("investments", {
@@ -105,9 +111,11 @@ class Database:
             "itype": "ação",
             "exempt": False,
             "sell_date": None,
-            "buy_date": "2020-09-01",
+            "buy_date": "2023-09-01",
             "price": 510,
-            "rate": 20
+            "rate": 20,
+            "sell_price": 12300,
+            "buy_price": 12500,
         })
 
         self.add_seed("investments", {
@@ -115,10 +123,12 @@ class Database:
             "name": "btg",
             "itype": "fundo_imobiliário",
             "exempt": False,
-            "sell_date": "2021-04-03",
-            "buy_date": "2020-01-01",
+            "sell_date": "2023-04-03",
+            "buy_date": "2023-01-01",
             "price": 100,
-            "rate": 0
+            "rate": 0,
+            "sell_price": 12300,
+            "buy_price": 12600,
         })
 
         self.add_seed("investments", {
@@ -126,54 +136,30 @@ class Database:
             "name": "btg",
             "itype": "fundo_imobiliário",
             "exempt": False,
-            "sell_date": "2021-03-03",
-            "buy_date": "2020-01-01",
+            "sell_date": "2023-03-03",
+            "buy_date": "2023-01-01",
             "price": 98,
-            "rate": 0
+            "rate": 0,
+            "sell_price": 1300,
+            "buy_price": 1500,
         })
 
         # Table profit_loss
-        # self.add_seed('profit_loss', {
-        #    "customer_id": "44801389864",
-        #    "day_trade_profit": None,
-        #    "swing_trade_profit": None,
-        #    "cripto_profit": None,
-        #    "fi_profit": None,
-        #    "day_trade_accumulated_loss": None,
-        #    "swing_trade_accumulated_loss": None,
-        #    "fi_loss": None,
-        #    "cripto_accumulated_loss": None,
-        #    "acumulated_loss": None,
-        #    "date": None
-        # })
-
-        # self.add_seed('profit_loss', {
-        #    "customer_id": "44801389864",
-        #    "day_trade_profit": None,
-        #    "swing_trade_profit": None,
-        #    "cripto_profit": None,
-        #    "fi_profit": None,
-        #    "day_trade_accumulated_loss": None,
-        #    "swing_trade_accumulated_loss": None,
-        #    "fi_loss": None,
-        #    "cripto_accumulated_loss": None,
-        #    "acumulated_loss": None,
-        #    "date": None
-        # })
-
-        # self.add_seed('profit_loss', {
-        #    "customer_id": "44801389864",
-        #    "day_trade_profit": None,
-        #    "swing_trade_profit": None,
-        #    "cripto_profit": None,
-        #    "fi_profit": None,
-        #    "day_trade_accumulated_loss": None,
-        #    "swing_trade_accumulated_loss": None,
-        #    "fi_loss": None,
-        #    "cripto_accumulated_loss": None,
-        #    "acumulated_loss": None,
-        #    "date": None
-        # })
+        self.add_seed("profit_loss", {
+            "customer_id": "44801389864",
+            "day_trade_profit": 100,
+            "swing_trade_profit": 100,
+            "cripto_profit": 100,
+            "fii_profit": 100,
+            "day_trade_accumulated_loss": 0,
+            "swing_trade_accumulated_loss": 0,
+            "fii_accumulated_loss": 0,
+            "cripto_accumulated_loss": 0,
+            # "accumulated_loss": None,
+            "generate_date": "2023-02-03",
+            "taxes": 1000,
+            "paid": "false"
+        })
 
     def run_sql_from_file(self, filepath: str) -> None:
         """Run a SQL file"""
@@ -296,6 +282,15 @@ class QueryConstructor:
         """Insert data into a table"""
         self.query += "INSERT INTO {} ({}) VALUES ({})".format(
             self.table.__table__, ", ".join(data.keys()), ", ".join(["%s"] * len(data)))
+        self.result = list(data.values())
+
+        self.execute(tuple(data.values()))
+        return self
+
+    def update(self, data: dict) -> QueryConstructor:
+        """Update data in a table"""
+        self.query += " UPDATE {} SET {}".format(
+            self.table.__table__, ", ".join(["{} = %s".format(key) for key in data.keys()]))
         self.result = list(data.values())
 
         self.execute(tuple(data.values()))

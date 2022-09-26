@@ -13,6 +13,8 @@ class Investment(BaseModel):
     buy_date: date
     price: float
     rate: float
+    buy_price: float
+    sell_price: float
 
     def headers() -> list:
         return [
@@ -25,4 +27,6 @@ class Investment(BaseModel):
             "buy_date",
             "price",
             "rate",
+            "buy_price",
+            "sell_price"
         ]

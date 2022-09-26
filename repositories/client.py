@@ -50,7 +50,7 @@ class ClientRepository:
                 query_investments.is_not_null("sell_date")
 
         if date:
-            if(avaliable):
+            if(not avaliable):
                 query_investments.and_("to_char(buy_date, 'YYYY-MM')",
                                        "=", date)
             else:
@@ -66,15 +66,15 @@ class ClientRepository:
         query_profit_loss.select().where("customer_id", "=", customer_id)
 
         if date:
-            query_profit_loss.and_("to_char(date, 'YYYY-MM')", "=", date)
+            query_profit_loss.and_(
+                "to_char(generate_date, 'YYYY-MM')", "=", date)
 
         query_profit_loss.execute()
 
         return query_profit_loss.results
 
     def calculate_tax(customer_id: str, date: str = None):
-        yesterday = datetime.datetime.strptime(
-            date, "%Y-%m") - datetime.timedelta(days=1)
+        yesterday = datetime.datetime.strptime(date, "%Y-%m")
         yesterday = yesterday.strftime("%Y-%m")
 
         investments_yesterday = ClientRepository.get_investments(

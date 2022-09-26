@@ -2,199 +2,124 @@ import datetime
 import math
 from datetime import datetime
 
+from models import investment
+
 
 def return_index(investments_last_month, investment_this_month):
     for item in investments_last_month:
-        if item["name"] == investment_this_month["name"]:
+
+        if item["name"] == investment_this_month["name"] and not item["sell_price"]:
             return item["price"]
 
 
+def get_cripto_tax(value: float):
+    cripto_tax = [
+        {
+            "range": range(0, 35001),
+            "result": 0.15,
+        },
+        {
+            "range": range(35001, 5000001),
+            "result": 0.15,
+        },
+        {
+            "range": range(5000001, 100000001),
+            "result": 0.175,
+        },
+        {
+            "range": range(100000001, 300000001),
+            "result": 0.2,
+        },
+        {
+            "else": 0.225,
+        }
+    ]
+
+    for cripto_price in cripto_tax:
+        if (cripto_price.get("else", None)):
+            return cripto_price["else"]
+        if value in cripto_price["range"]:
+            return cripto_price["result"]
+
+
+def sum_values(investments_this_month_sold):
+    sum_cripto = 0
+    sum_stock = 0
+
+    for item in investments_this_month_sold:
+
+        if item["itype"] == "ação":
+            sum_stock += item["buy_price"] - item["sell_price"]
+
+        elif item["itype"] == "criptoativos":
+            sum_cripto += item["buy_price"] - item["sell_price"]
+
+    return (sum_cripto, sum_stock)
+
+
 class TaxCalculator:
-    def get_cripto_price(value: float):
-        CRIPTO_PRICES = [
-            {
-                "range": range(0, 35001),
-                "result": 0.15,
-            },
-            {
-                "range": range(35001, 5000001),
-                "result": 0.15,
-            },
-            {
-                "range": range(5000001, 100000001),
-                "result": 0.175,
-            },
-            {
-                "range": range(100000001, 300000001),
-                "result": 0.2,
-            },
-            {
-                "else": 0.225,
-            }
-        ]
 
-        for cripto_price in CRIPTO_PRICES:
-            if (cripto_price.get("else", None)):
-                return cripto_price["else"]
-            if value in cripto_price["range"]:
-                return cripto_price["result"]
-
-    def taxes(investments_this_month_sold, investments_last_month, current_date, last_taxes={"day_trade_accumulated_loss": 0, "swing_accumulated_loss": 0, "fii_loss": 0, "cripto_accumulated_loss": 0}):
-        investments = {}
-
-        taxes = {}
-        cripto_sum = 0
-        stocks_sum = 0
+    def taxes(investments_this_month_sold, current_date, last_taxes={"day_trade_accumulated_loss": 0, "swing_accumulated_loss": 0, "fii_loss": 0, "cripto_accumulated_loss": 0}):
+        investment_taxes = []
         day_trade_profit = 0
         swing_trade_profit = 0
         cripto_profit = 0
         fii_profit = 0
-        sum_taxes = 0
-        for investment_this_month in investments_this_month_sold:
+        taxes_sum = 0
 
-            last_price = return_index(
-                investments_last_month, investment_this_month)
-            if (last_price is None):
-                last_price = 0
-            investments[investment_this_month["name"]] = {
-                "name": investment_this_month["name"],
-                "bank_id": investment_this_month["bank_id"],
-                "itype": investment_this_month["itype"],
-                "rate": investment_this_month["rate"],
-                "buy_date": investment_this_month["buy_date"],
-                "sell_date": investment_this_month["sell_date"],
-                "exempt": False,
-                "profit": investment_this_month["price"] - last_price
-            }
+        for (i, investment) in enumerate(investments_this_month_sold):
 
-        for item in list(investments):
+            investment_taxes.append(investment)
 
-            item = investments[item]
-            print("aaaaaaaaa", item)
-            print((datetime.strptime(item["sell_date"], "%Y-%m-%d") -
-                  datetime.strptime(item["buy_date"], "%Y-%m-%d")).days)
-            if item["itype"] == "criptoativo":
-                cripto_sum += item["profit"]
-            elif item["itype"] == "ação" and (datetime.strptime(item["sell_date"], "%Y-%m-%d")-datetime.strptime(item["buy_date"], "%Y-%m-%d")).days >= 1:
-                stocks_sum += item["profit"]
-        if stocks_sum <= 20000:
-            stock_exempt = True
-        if cripto_sum <= 35000:
-            cripto_exempt = True
-        print(cripto_sum, stocks_sum)
-        for item in list(investments):
-            item = investments[item]
-            if (datetime.strptime(item["sell_date"], "%Y-%m-%d")-datetime.strptime(item["buy_date"], "%Y-%m-%d")).days < 1 and item["itype"] in ["ação", "BDR", "ETF"]:
-                taxes[item["name"]] = {
-                    "name": item["name"],
-                    "bank_id": item["bank_id"],
-                    "itype": item["itype"],
-                    "rate": item["rate"],
-                    "buy_date": item["buy_date"],
-                    "sell_date": item["sell_date"],
-                    "exempt": False,
-                    "modality": "day_trade",
-                    "taxes": item["profit"]*0.2,
-                    "profit": item["profit"]
-                }
-                sum_taxes += item["profit"]*0.2
-                day_trade_profit += item["profit"]
-            elif (item["itype"] == "fundo_imobiliário"):
-                taxes[item["name"]] = {
-                    "name": item["name"],
-                    "bank_id": item["bank_id"],
-                    "itype": item["itype"],
-                    "rate": item["rate"],
-                    "buy_date": item["buy_date"],
-                    "sell_date": item["sell_date"],
-                    "exempt": False,
-                    "modality": "not relevant",
-                    "taxes": item["profit"]*0.2,
-                    "profit": item["profit"]
-                }
-                fii_profit += item["profit"]
-                sum_taxes += item["profit"]*0.2
-            elif(item["itype"] in ["BDR", "ETF", "fundo de ação"]):
-                taxes[item["name"]] = {
-                    "name": item["name"],
-                    "bank_id": item["bank_id"],
-                    "itype": item["itype"],
-                    "rate": item["rate"],
-                    "buy_date": item["buy_date"],
-                    "sell_date": item["sell_date"],
-                    "exempt": False,
-                    "modality": "not relevant",
-                    "taxes": item["profit"]*0.15,
-                    "profit": item["profit"]
-                }
-                swing_trade_profit += item["profit"]
-                sum_taxes += item["profit"]*0.15
+            if (investment["sell_date"] - investment["buy_date"]).days < 1 and investment["itype"] in ["BDR", "ação", "ETF"]:
 
-            elif item["itype"] == "criptoativos":
-                taxes[item["name"]] = {
-                    "name": item["name"],
-                    "bank_id": item["bank_id"],
-                    "itype": item["itype"],
-                    "rate": item["rate"],
-                    "buy_date": item["buy_date"],
-                    "buy_date": item["buy_date"],
-                    "sell_date": item["sell_date"],
-                    "exempt": cripto_exempt,
-                    "modality": "not relevant",
-                    "taxes": item["profit"]*TaxCalculator.get_cripto_price(math.floor(item[cripto_sum])),
-                    "profit": item["profit"]
-                }
-                cripto_profit += item["profit"]
-                sum_taxes += item["profit"] * \
-                    TaxCalculator.get_cripto_price(
-                        math.floor(item[cripto_sum]))
+                investment_taxes[investment["id"]]["taxes"] = (
+                    investment_taxes[investment["id"]]["sell_price"] - investment_taxes[investment["id"]]["buy_price"])*0.2
+                taxes_sum += investment_taxes[investment["id"]]["taxes"]
+                day_trade_profit += investment_taxes[investment["id"]
+                                                     ]["sell_price"] - investment_taxes[investment["id"]]["buy_price"]
 
-            elif item["itype"] == "ação" and stock_exempt:
-                print("cheeeeegou")
-                taxes[item["name"]] = {
-                    "name": item["name"],
-                    "bank_id": item["bank_id"],
-                    "itype": item["itype"],
-                    "rate": item["rate"],
-                    "buy_date": item["buy_date"],
-                    "buy_date": item["buy_date"],
-                    "sell_date": item["sell_date"],
-                    "exempt": stock_exempt,
-                    "modality": "not relevant",
-                    "taxes": 0,
-                    "profit": item["profit"]
-                }
-                swing_trade_profit += item["profit"]
-            elif item["itype"] == "ação" and not stock_exempt:
-                taxes[item["name"]] = {
-                    "name": item["name"],
-                    "bank_id": item["bank_id"],
-                    "itype": item["itype"],
-                    "rate": item["rate"],
-                    "buy_date": item["buy_date"],
-                    "buy_date": item["buy_date"],
-                    "sell_date": item["sell_date"],
-                    "exempt": stock_exempt,
-                    "modality": "not relevant",
-                    "taxes": item["profit"]*0.15,
-                    "profit": item["profit"]
-                }
+            elif investment["itype"] in ["BDR", "ETF"]:
 
-                sum_taxes += item["profit"]*0.15
-            elif (item["itype"] == "fundos_acoes"):
-                taxes[item["name"]] = {
-                    "name": item["name"],
-                    "bank_id": item["bank_id"],
-                    "itype": item["itype"],
-                    "rate": item["rate"],
-                    "buy_date": item["buy_date"],
-                    "sell_date": item["sell_date"],
-                    "exempt": False,
-                    "modality": "not relevant",
-                    "taxes": item["profit"]*0.15,
-                    "price": item["price"]
-                }
-                sum_taxes += item["profit"]*0.15
+                investment_taxes[investment["id"]]["taxes"] = (
+                    investment_taxes[investment["id"]]["buy_price"] - investment_taxes[investment["id"]]["buy_price"])*0.15
+                taxes_sum += investment_taxes[investment["id"]]["taxes"]
+                swing_trade_profit += investment_taxes[investment["id"]
+                                                       ]["sell_price"] - investment_taxes[investment["id"]]["buy_price"]
+
+            elif investment["itype"] == "fundo imobiliário":
+
+                investment_taxes[investment["id"]]["taxes"] = (
+                    investment_taxes[investment["id"]]["sell_price"] - investment_taxes[investment["id"]]["buy_price"])*0.2
+                taxes_sum += investment_taxes[investment["id"]]["taxes"]
+                fii_profit += investment_taxes[investment["id"]]["sell_price"] - \
+                    investment_taxes[investment["id"]]["buy_price"]
+
+            elif investment["itype"] == "criptoativos":
+
+                investment_taxes[investment["id"]]["taxes"] = (
+                    investment_taxes[investment["id"]]["sell_price"] - investment_taxes[investment["id"]]["buy_price"])*get_cripto_tax(sum_values(investments_this_month_sold)[0])
+                taxes_sum += investment_taxes[investment["id"]]["taxes"]
+                cripto_profit += investment_taxes[investment["id"]]["sell_price"] - \
+                    investment_taxes[investment["id"]]["buy_price"]
+
+            elif sum_values(investments_this_month_sold)[1] > 20000:
+                if investment["itype"] == "ação":
+
+                    investment_taxes[investment["id"]]["taxes"] = (
+                        investment_taxes[investment["id"]]["sell_price"] - investment_taxes[investment["id"]]["buy_price"])*0.2
+                    taxes_sum += investment_taxes[investment["id"]]["taxes"]
+                    swing_trade_profit += investment_taxes[investment["id"]]["sell_price"] - \
+                        investment_taxes[investment["id"]]["buy_price"]
+
+            elif sum_values(investments_this_month_sold)[1] < 20000:
+                if investment["itype"] == "ação":
+
+                    investment_taxes[i]["taxes"] = 0
+                    taxes_sum += investment_taxes[i]["taxes"]
+                    swing_trade_profit += investment_taxes[i]["sell_price"] - \
+                        investment_taxes[i]["buy_price"]
+
         temp = {
             "day_trade_profit": (lambda x: x if x > 0 else 0)(day_trade_profit),
             "swing_trade_profit": (lambda x: x if x > 0 else 0)(swing_trade_profit),
@@ -204,10 +129,9 @@ class TaxCalculator:
             'swing_trade_accumulated_loss': last_taxes["swing_accumulated_loss"]+(lambda x: x if x < 0 else 0)(swing_trade_profit),
             "fii_accumulated_loss": last_taxes["fii_loss"]+(lambda x: x if x < 0 else 0)(fii_profit),
             'cripto_accumulated_loss': last_taxes["cripto_accumulated_loss"]+(lambda x: x if x < 0 else 0)(cripto_profit),
-            "taxes": sum_taxes,
-            'date': datetime.strptime(current_date, "%Y-%m-%d").replace(day=1).strftime("%Y-%m"),
+            "taxes": taxes_sum,
+            'date': datetime.strptime(current_date, "%Y-%m-%d").replace(day=1).strftime("%Y-%m")
         }
-
         return {
             "day_trade_profit": temp['day_trade_profit'],
             "swing_trade_profit": temp["swing_trade_profit"],

@@ -7,7 +7,9 @@ CREATE TABLE IF NOT EXISTS investments (
   sell_date date DEFAULT null,
   buy_date date,
   price float,
-  rate float
+  rate float,
+  buy_price float,
+  sell_price float
 );
 
 CREATE TABLE IF NOT EXISTS banks (
@@ -35,5 +37,5 @@ CREATE TABLE IF NOT EXISTS profit_loss (
   accumulated_loss int ARRAY,
   generate_date date,
   taxes FLOAT,
-  pending BOOL DEFAULT FALSE
+  paid BOOL DEFAULT FALSE
 );
